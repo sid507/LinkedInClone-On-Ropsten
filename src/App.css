@@ -1,0 +1,20 @@
+#header-option>.MuiSvgIcon-root
+{
+    font-size: 30px;    
+}
+
+
+
+.normalText
+{
+    color:gray;
+}
+.normalTextBold
+{
+    color: gray;
+    font-weight: bold;
+}
+.normalTextBlue
+{
+    color: blue;
+}

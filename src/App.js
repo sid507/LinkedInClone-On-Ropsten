@@ -12,8 +12,8 @@ function App() {
       {/* Header */}
       <Header></Header>
       {/* App body */}
-      <div className="flex flex-row w-8/12 m-auto">
-        <Profile/>
+      <div className="flex flex-row md:w-full lg:w-8/12  m-auto space-x-4 p-5">
+        <Profile name="Siddharth Mishra" desc={"App Developer at Kylo Apps"} views={400} connection={550} avatar="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdeKrw1icXOp_na4WIDMHCstMLWQEKxWqDmIUdUtfu&s" />
         <Feeds/>
         <News/>
       </div>
