@@ -1,25 +1,51 @@
-import React from 'react';
+import {React,useEffect} from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import Header from './Header';
 import './App.css';
 import Profile from './Profile';
 import Feeds from './Feeds';
 import News from './News';
+import { logIn, logout, selectUser } from './features/userSlice';
+import Login from './Login';
+import { auth } from './Firebase';
 
 
 function App() {
+
+  const user = useSelector(selectUser);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    auth.onAuthStateChanged((userAuth) => {
+      console.log(userAuth);
+      if (userAuth) {
+        dispatch(logIn({
+          email: userAuth.email,
+          uid: userAuth.uid,
+          displayName: userAuth.displayName,
+          photoUrl: userAuth.photoURL,
+        }))
+      }
+      else
+      {
+        dispatch(logout());
+      }
+    })
+
+  }, [])
+
   return (
     <div className="App flex flex-col">
       {/* Header */}
       <Header></Header>
-      {/* App body */}
-      <div className="flex flex-row md:w-full lg:w-8/12  m-auto space-x-4 p-5">
-        <Profile name="Siddharth Mishra" desc={"App Developer at Kylo Apps"} views={400} connection={550} avatar="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdeKrw1icXOp_na4WIDMHCstMLWQEKxWqDmIUdUtfu&s" />
-        <Feeds/>
-        <News/>
-      </div>
-        {/* profile */}
-        {/* feeds */}
-        {/* news */}
+      {user ? (<div className="flex lg:flex-row sm:flex-col md:w-full lg:w-8/12  m-auto space-x-4 p-5 my-12 ">
+        <Profile name={user.displayName} desc={user.email} views={400} connection={550} avatar={user.photoUrl} />
+        <Feeds />
+        <News />
+      </div>) : <Login />}
+
+
     </div>
   );
 }

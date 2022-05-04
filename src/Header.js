@@ -1,14 +1,16 @@
 import { Icon } from '@material-ui/core'
 import { Business, Home, Message, MessageOutlined, Notifications, People, Search } from '@material-ui/icons'
 import { Avatar } from '@mui/material';
+import { useDispatch,useSelector } from 'react-redux';
 import './App.css';
 
 
 import React from 'react'
+import { logout, selectUser } from './features/userSlice';
 
-function HeaderOption({ title, Icon, avatar }) {
+function HeaderOption({ title, Icon, avatar, operation }) {
     return (
-        <div className="flex flex-col text-gray-500 hover:text-black" id="header-option">
+        <div onClick={ operation} className="flex flex-col text-gray-500 hover:text-black" id="header-option">
             {Icon && <Icon  className="mx-auto text-lg "></Icon>}
             {avatar && <Avatar sx={{width:30, height:30}} className="mx-auto" src={avatar}></Avatar> }
 
@@ -18,8 +20,12 @@ function HeaderOption({ title, Icon, avatar }) {
 }
 
 function Header() {
+
+    const user = useSelector(selectUser);
+    const dispatch = useDispatch();
+
     return (
-        <div className="flex w-screen bg-[#fff]">
+        <div className="flex w-screen bg-[#fff] fixed shadow-md z-50">
             <div className="  lg:w-8/12 md:w-full  mx-auto">
                 <div className="flex justify-between mx-3.5 p-1 ">
                     <div className="flex justify-evenly gap-3  my-auto">
@@ -39,7 +45,7 @@ function Header() {
 
                         <HeaderOption title="Notification" Icon={Notifications}></HeaderOption>
 
-                        <HeaderOption title="Me" avatar={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdeKrw1icXOp_na4WIDMHCstMLWQEKxWqDmIUdUtfu&s"}></HeaderOption>
+                        <HeaderOption operation={e=>dispatch(logout())} title="Logout" avatar={user ? user.photoUrl:"https://cdn-icons-png.flaticon.com/512/147/147142.png"}></HeaderOption>
 
 
                     </div>

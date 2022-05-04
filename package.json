@@ -17,6 +17,8 @@
     "firebase-tools": "^10.7.2",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
+    "react-flip-move": "^3.0.4",
+    "react-loading": "^2.0.3",
     "react-redux": "^8.0.1",
     "react-scripts": "5.0.1",
     "styled-components": "^5.3.5",

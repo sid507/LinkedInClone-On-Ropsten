@@ -2,14 +2,17 @@ import { rgbToHex } from '@material-ui/core';
 import { blue } from '@material-ui/core/colors';
 import { BusinessCenter, Comment, CommentOutlined, Done, Edit, NewReleases, Notifications, NotificationsOutlined, Photo, Send, Share, ThumbUp, ThumbUpOutlined, VideoCall } from '@material-ui/icons'
 import { Avatar } from '@mui/material';
-import {React,useState,useEffect} from 'react'
+import {React,useState,useEffect,forwardRef} from 'react'
 import './App.css';
 import { db } from './Firebase';
 import firebase from 'firebase/compat/app';
+import { useDispatch,useSelector } from 'react-redux';
+import { selectUser } from './features/userSlice';
 
 // import {db,auth} from './firebase';
 
 // NewReleases
+import FlipMove from 'react-flip-move';
 
 
 function InputOption({Icon,title,color})
@@ -23,10 +26,9 @@ function InputOption({Icon,title,color})
     );
 }
 
-function PastFeed({name,desc,msg,photoUrl})
-{
+const PastFeed=forwardRef(({name,desc,msg,photoUrl},ref)=>{
     return (
-        <div className="flex flex-col bg-white rounded-lg p-4 gap-4">
+        <div ref={ref} className="flex flex-col bg-white rounded-lg p-4 gap-4 mb-8">
         <div className="flex flex-row gap-2 p-2">
             <Avatar src={photoUrl}></Avatar>
             <div className="flex flex-col ">
@@ -46,14 +48,18 @@ function PastFeed({name,desc,msg,photoUrl})
 
     );
 }
+)
 
 function Feeds() {
 
     const [post, setpost] = useState([]);
     const [input, setinput] = useState("");
+    const dispatch = useDispatch();
+    const user = useSelector(selectUser);
+
     useEffect(() => {
         
-        db.collection("posts").onSnapshot(snapshot=>(
+        db.collection("posts").orderBy('timestamp','desc').onSnapshot(snapshot=>(
             setpost(snapshot.docs.map(doc=>(
                 {id:doc.id,
                 data:doc.data()}
@@ -65,17 +71,18 @@ function Feeds() {
         e.preventDefault();
         db.collection("posts").add(
             {
-                name:"Siddharth Mishra",
-                description:"Software Developer",
+                name:user.displayName,
+                description:user.email,
                 message:input,
-                photoUrl:"",
+                photoUrl:user.photoUrl,
                 timestamp:firebase.firestore.FieldValue.serverTimestamp(),
             }
         )
+        setinput("");
     }
 
     return (
-        <div className="flex flex-col gap-4 basis-3/5">
+        <div className="flex flex-col gap-4 lg:basis-3/5 ">
             {/* post input */}
             <div className="flex flex-col h-32 w-full bg-white p-4 rounded-lg space-y-2">
                 <form className="flex flex-row  py-2 px-4 rounded-full border-2 border-gray-400 ">
@@ -95,10 +102,11 @@ function Feeds() {
 
             </div>
             <hr/>
-
+            <FlipMove> 
             {post.map(data=><PastFeed key={data.id} name={data.data.name} desc={data.data.description} msg={data.data.message} photoUrl={data.data.photoUrl}/>)}
             {/* <PastFeed name={"Anuj Sharma"} desc={"Software Engineer"} msg={"Namaste Javascript is responsible for a ton of resignations. 😂"} photoUrl="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdeKrw1icXOp_na4WIDMHCstMLWQEKxWqDmIUdUtfu&s"/> */}
             {/* past input */}
+            </FlipMove>
         </div>
     )
 }
