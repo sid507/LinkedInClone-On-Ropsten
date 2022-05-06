@@ -72,7 +72,7 @@ function Login() {
                     <input onChange={e => setname(e.target.value)} className="py-3 px-2 rounded-lg border-2 border-gray-400 outline-none" placeholder="Full Name (required if registering)"></input>
                     <input onChange={e => setprofilePic(e.target.value)} className="py-3 px-2 rounded-lg border-2 border-gray-400 outline-none" placeholder="Profile pic URL (optional)"></input>
                     <input onChange={e => setemail(e.target.value)} className="py-3 px-2 rounded-lg border-2 border-gray-400 outline-none" placeholder="Email"></input>
-                    <input onChange={e => setpassword(e.target.value)} className="py-3 px-2 rounded-lg border-2 border-gray-400 outline-none" placeholder="Password"></input>
+                    <input type="password" onChange={e => setpassword(e.target.value)} className="py-3 px-2 rounded-lg border-2 border-gray-400 outline-none" placeholder="Password"></input>
                     <button onClick={signIn} className="py-3 px-2 rounded-lg border-2 bg-blue-400 outline-none">Sign In</button>
                     <div className="flex flex-row mx-auto gap-2">
                         <div className="normalText">Not a member?</div>

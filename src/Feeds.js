@@ -8,6 +8,8 @@ import { db } from './Firebase';
 import firebase from 'firebase/compat/app';
 import { useDispatch,useSelector } from 'react-redux';
 import { selectUser } from './features/userSlice';
+import {ethers} from 'ethers';
+
 
 // import {db,auth} from './firebase';
 
@@ -26,7 +28,9 @@ function InputOption({Icon,title,color})
     );
 }
 
-const PastFeed=forwardRef(({name,desc,msg,photoUrl},ref)=>{
+const PastFeed=forwardRef(({name,desc,msg,photoUrl,blockHash},ref)=>{
+    var link="https://ropsten.etherscan.io/tx/"+blockHash;
+
     return (
         <div ref={ref} className="flex flex-col bg-white rounded-lg p-4 gap-4 mb-8">
         <div className="flex flex-row gap-2 p-2">
@@ -37,6 +41,9 @@ const PastFeed=forwardRef(({name,desc,msg,photoUrl},ref)=>{
             </div> 
         </div>
         <div>{msg}</div>
+        <a href={link}>
+        <div on className="hover:cursor-pointer text-blue-400 normalTextBold text-sm">{blockHash}</div>
+        </a>
         <hr/>
         <div className="flex flex-row justify-evenly">
             <InputOption Icon={ThumbUpOutlined} title={"Like"}/>
@@ -50,34 +57,351 @@ const PastFeed=forwardRef(({name,desc,msg,photoUrl},ref)=>{
 }
 )
 
+Math.randomInt = function(max) {
+    return Math.floor(max * Math.random());
+};
+
 function Feeds() {
 
+    const abi = [
+    {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "displayName",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "postMessage",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "url",
+                "type": "string"
+            }
+        ],
+        "name": "createPost",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "res",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "curr",
+                "type": "uint256"
+            }
+        ],
+        "name": "getAddress",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "curr_user",
+                "type": "address"
+            }
+        ],
+        "name": "getMessageCount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "curr",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "curr_user",
+                "type": "address"
+            }
+        ],
+        "name": "getPost",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "message",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "time",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "profileUrl",
+                        "type": "string"
+                    }
+                ],
+                "internalType": "struct Auction.Post",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getTotalUser",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "messageCount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "posts",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "internalType": "uint256",
+                "name": "time",
+                "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "profileUrl",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "user",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
+
     const [post, setpost] = useState([]);
+    const [account, setaccount] = useState("");
     const [input, setinput] = useState("");
+
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
+    const AuctionContractAdress ="0x9905D18fa7B256Fb1e99447e130668514ECEec21";
+    var ppost=[];
+
+
+    async function initializeProvider(){
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        return new ethers.Contract(AuctionContractAdress,abi,signer);
+    }
+
+    async function requestAccount() {
+        const account = await window.ethereum.request({method:'eth_requestAccounts'});
+        setaccount(account[0]);
+        console.log(account);
+    }
+    var unique=0;
+    var previousPost=[];
+    async function getAllPost(e){
+        if (typeof window.ethereum !== 'undefined') {
+
+        await requestAccount();
+        const contract = await initializeProvider();
+        try{
+        
+        contract.getTotalUser()
+        .then((userCount)=>{
+            for(var j=0;j<userCount;j++)
+            {   
+
+                contract.getAddress(j)
+                .then((address)=>{
+                    
+                contract.getMessageCount(address)
+                .then((count)=>{
+                    alert(address,count);
+                for(var i=0;i<count;i++)
+                {
+                    contract.getPost(i,address)
+                    .then((postt)=>{
+                        console.log(post)
+                        var x=post;
+                        x.push({id:unique++,data:{name:postt[0],description:account,message:postt[1],photoUrl:postt[3]}});
+                        setpost(x);
+                        console.log(post)
+                    })
+
+                    
+                }
+            // 
+            
+                })
+         
+
+         
+                })
+                
+            }
+        })
+        .then(()=>{
+            console.log(previousPost);
+        })
+         
+           
+        }
+        catch (e)
+        {
+            console.log(e);
+        }
+    }
+    }
 
     useEffect(() => {
         
+
+        // getAllPost();
+
+        // setpost(previousPost)
+
+        // alert(post[0].name);
         db.collection("posts").orderBy('timestamp','desc').onSnapshot(snapshot=>(
             setpost(snapshot.docs.map(doc=>(
                 {id:doc.id,
                 data:doc.data()}
             )))
         ))
-    }, [])
+    },[])
 
-    const sendPost=(e)=>{
+    
+
+    async function sendPost(e){
         e.preventDefault();
-        db.collection("posts").add(
+
+        await requestAccount();
+        console.log(account);
+        const contract = await initializeProvider();
+        try{
+
+        contract.createPost(user.displayName,input,user.photoUrl)
+        .then((data)=>{
+            console.log(data);
+            db.collection("posts").add(
             {
                 name:user.displayName,
                 description:user.email,
                 message:input,
                 photoUrl:user.photoUrl,
                 timestamp:firebase.firestore.FieldValue.serverTimestamp(),
+                blockHash:data.hash,
             }
         )
+        })
+
+
+         
+           
+        }
+        catch (e)
+        {
+            console.log(e.message);
+        }
+
+        
         setinput("");
     }
 
@@ -103,7 +427,7 @@ function Feeds() {
             </div>
             <hr/>
             <FlipMove> 
-            {post.map(data=><PastFeed key={data.id} name={data.data.name} desc={data.data.description} msg={data.data.message} photoUrl={data.data.photoUrl}/>)}
+            {post.map(data=><PastFeed key={data.id} blockHash={data.data.blockHash} name={data.data.name} desc={data.data.description} msg={data.data.message} photoUrl={data.data.photoUrl}/>)}
             {/* <PastFeed name={"Anuj Sharma"} desc={"Software Engineer"} msg={"Namaste Javascript is responsible for a ton of resignations. 😂"} photoUrl="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdeKrw1icXOp_na4WIDMHCstMLWQEKxWqDmIUdUtfu&s"/> */}
             {/* past input */}
             </FlipMove>

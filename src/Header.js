@@ -10,7 +10,7 @@ import { logout, selectUser } from './features/userSlice';
 
 function HeaderOption({ title, Icon, avatar, operation }) {
     return (
-        <div onClick={ operation} className="flex flex-col text-gray-500 hover:text-black" id="header-option">
+        <div onClick={ operation} className="flex flex-col text-gray-500 hover:text-black hover:cursor-pointer" id="header-option">
             {Icon && <Icon  className="mx-auto text-lg "></Icon>}
             {avatar && <Avatar sx={{width:30, height:30}} className="mx-auto" src={avatar}></Avatar> }
 
