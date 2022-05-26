@@ -17,10 +17,10 @@ import {ethers} from 'ethers';
 import FlipMove from 'react-flip-move';
 
 
-function InputOption({Icon,title,color})
+function InputOption({Icon,title,color,operation})
 {
     return (
-        <div className="flex flex-row gap-2 hover:bg-gray-300 px-1 py-2 rounded-lg">
+        <div onClick={operation} className="flex flex-row gap-2 hover:bg-gray-300 px-1 py-2 rounded-lg cursor-pointer">
             <Icon style={{color:color}}></Icon>
             <div className="normalTextBold">{title}</div>
 
@@ -28,8 +28,46 @@ function InputOption({Icon,title,color})
     );
 }
 
-const PastFeed=forwardRef(({name,desc,msg,photoUrl,blockHash},ref)=>{
+const PastFeed=forwardRef(({id,name,desc,msg,photoUrl,blockHash,like},ref)=>{
     var link="https://ropsten.etherscan.io/tx/"+blockHash;
+    const [totalLike, settotalLike] = useState(0);
+    const [liked, setliked] = useState(false);
+
+    const user = useSelector(selectUser);
+
+    useEffect(() => {
+        var ref=db.collection("posts").doc(id);
+        ref.get()
+        .then(data=>{settotalLike(data.data().like.length)
+        for(var i=0;i<data.data().like.length;i++)
+        {
+            if(data.data().like[i]===user.email)
+            {
+                setliked(true);
+                break;
+            }
+        }
+        
+        });
+    }, [])
+    function addLike(e,userId)
+    {
+        var ref=db.collection("posts").doc(id);
+        ref.update({like:firebase.firestore.FieldValue.arrayUnion(user.email)})
+        .then(()=>{
+            setliked(true);
+            settotalLike(totalLike+1);
+        })
+    }
+    function dislike()
+    {
+        var ref = db.collection("posts").doc(id);
+        ref.update({like:firebase.firestore.FieldValue.arrayRemove(user.email)})
+        .then(()=>{
+            setliked(false);
+        settotalLike(totalLike-1);
+        })
+    }
 
     return (
         <div ref={ref} className="flex flex-col bg-white rounded-lg p-4 gap-4 mb-8">
@@ -46,7 +84,7 @@ const PastFeed=forwardRef(({name,desc,msg,photoUrl,blockHash},ref)=>{
         </a>
         <hr/>
         <div className="flex flex-row justify-evenly">
-            <InputOption Icon={ThumbUpOutlined} title={"Like"}/>
+            {!liked?<InputOption  operation={(e)=>addLike(e,like)} Icon={ThumbUpOutlined} title={totalLike+" Like"}/>:<InputOption color={"blue"} operation={(e)=>dislike()} Icon={ThumbUpOutlined} title={totalLike+" Like"}/>}
             <InputOption Icon={CommentOutlined} title={"Comment"}/>
             <InputOption Icon={Share} title={"Share"}/>
             <InputOption Icon={Send} title={"Send"}/>
@@ -388,6 +426,8 @@ function Feeds() {
                 photoUrl:user.photoUrl,
                 timestamp:firebase.firestore.FieldValue.serverTimestamp(),
                 blockHash:data.hash,
+                like:[],
+                comment:{}
             }
         )
         })
@@ -427,7 +467,7 @@ function Feeds() {
             </div>
             <hr/>
             <FlipMove> 
-            {post.map(data=><PastFeed key={data.id} blockHash={data.data.blockHash} name={data.data.name} desc={data.data.description} msg={data.data.message} photoUrl={data.data.photoUrl}/>)}
+            {post.map(data=><PastFeed key={data.id} id={data.id} blockHash={data.data.blockHash} name={data.data.name} desc={data.data.description} msg={data.data.message} photoUrl={data.data.photoUrl} like={data.data.like}/>)}
             {/* <PastFeed name={"Anuj Sharma"} desc={"Software Engineer"} msg={"Namaste Javascript is responsible for a ton of resignations. 😂"} photoUrl="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdeKrw1icXOp_na4WIDMHCstMLWQEKxWqDmIUdUtfu&s"/> */}
             {/* past input */}
             </FlipMove>

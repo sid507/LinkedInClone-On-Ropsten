@@ -1,4 +1,5 @@
 import {  createSlice } from '@reduxjs/toolkit';
+import { auth } from '../Firebase';
 
 
 
@@ -16,7 +17,8 @@ export const userSlice = createSlice({
     },
  
     logout: (state) => {
-      state.user = null;
+      state.user=null;
+      auth.signOut();
     },
   },
   
